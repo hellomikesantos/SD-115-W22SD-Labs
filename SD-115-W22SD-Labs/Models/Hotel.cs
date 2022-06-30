@@ -1,4 +1,4 @@
-﻿// Lab-1
+﻿// Lab-2
 using Microsoft.AspNetCore.Mvc;
 
 namespace SD_115_W22SD_Labs.Models
@@ -18,9 +18,9 @@ namespace SD_115_W22SD_Labs.Models
             Reservations = new HashSet<Reservation>();
             Clients = new HashSet<Client>();
 
-            Room room1 = new Room("101", 4, "Regular");
-            Room room2 = new Room("102", 4, "Regular");
-            Room room3 = new Room("103", 2, "Premium");
+            Room room1 = new Room(101, 4, "Regular");
+            Room room2 = new Room(102, 4, "Regular");
+            Room room3 = new Room(103, 2, "Premium");
 
             Rooms.Add(room1);
             Rooms.Add(room2);
@@ -115,15 +115,15 @@ namespace SD_115_W22SD_Labs.Models
             return reservation;
         }
         
-        static Room GetRoom(string roomNumber)
+        static Room GetRoom(int roomNumber)
         {
             Room room = Rooms.First(room => room.Number == roomNumber);
             return room;
         }
 
-        static List<Room> GetVacantRooms()
+        static List<Room> GetVacantRooms(List<Room> rooms)
         {
-            List<Room> vacantRooms = Rooms.Where(room => !room.Occupied).ToList();
+            List<Room> vacantRooms = rooms.Where(room => !room.Occupied).ToList();
             return vacantRooms;
         }
 
@@ -135,16 +135,131 @@ namespace SD_115_W22SD_Labs.Models
             return topThreeClients;
         }
 
-        static Reservation AutomaticReservation(int clientId, int occupants)
+        static bool WithDuplicate(DateTime date)
         {
-            List<Room> occupiableRooms = Rooms.Where(room => room.Capacity >= occupants).ToList();
-            Room room = occupiableRooms.First(room => !room.Occupied);
-
-            Client client = Clients.First(client => client.IdCounter == clientId);
-
-            Reservation reservation = new Reservation(room, client);
-            return reservation;
+            bool withDuplicate = false; ;
+            foreach(Reservation reservation in Reservations)
+            {
+                if(reservation.StartDate == date)
+                {
+                    withDuplicate = true;
+                    break;
+                }
+                else
+                {
+                    withDuplicate = false;
+                }
+            }
+            return withDuplicate;
         }
 
+        static void ReserveRoom(Client client, int roomNumber, DateTime startDate, int occupants)
+        {
+            foreach (Room room in Rooms)
+            {
+                if (room.Number == roomNumber 
+                    && !room.Occupied 
+                    && room.Rating == client.Membership 
+                    && !WithDuplicate(client.Reservation.StartDate))
+                {
+                    Reservation reservation = new Reservation(room, client);
+                    if (reservation.Room.Capacity >= occupants)
+                    {
+                        Reservations.Add(reservation);
+                        room.Reservation = reservation;
+                        reservation.Client = client;
+                        client.Reservation = reservation;
+                        break;
+                    }
+                }
+            }
+        }
+
+        static Reservation AutomaticReservation(int clientId, int occupants)
+        {
+            
+            List<Room> occupiableRooms = Rooms.Where(room => room.Capacity >= occupants).ToList();
+            Room room = occupiableRooms.First(room => !room.Occupied);
+            Client client = GetClient(clientId);
+
+            if (!WithDuplicate(client.Reservation.StartDate))
+            {
+                // reserve the client
+                Reservation reservation = new Reservation(room, client);
+                Reservations.Add(reservation);
+                room.Reservation = reservation;
+                reservation.Client = client;
+                client.Reservation = reservation;
+
+                return reservation;
+            }
+            return null;
+        }
+
+        static void Checkin(string clientName)
+        {
+            Client client = Clients.First(client => client.Name == clientName);
+            client.Reservation.Current = true;
+            client.Reservation.Room.Occupied = true;
+            client.Reservation.Room.CurrentOccupants = client.Reservation.Occupants;
+        }
+        static void CheckoutRoom(int roomNumber)
+        {
+            Room room = GetRoom(roomNumber);
+            // check-out reservation
+            room.Reservation.Current = false;
+            room.Occupied = false;
+            room.CurrentOccupants = room.Reservation.Occupants;
+        }
+        static void CheckOutRoom(string clientName)
+        {
+            Client client = Clients.First(client => client.Name == clientName);
+            client.Reservation.Current = true;
+            client.Reservation.Room.Occupied = true;
+            client.Reservation.Room.CurrentOccupants = client.Reservation.Occupants;
+        }
+
+        static int TotalCapacityRemaining()
+        {
+            // get total capacity
+            int TotalCapacity = 0;
+            // get current occupants
+            int currentOccupants = 0;
+            foreach (Room room in Rooms)
+            {
+                TotalCapacity += room.Capacity;
+                currentOccupants += room.CurrentOccupants;
+            }
+            int totalRemaining = TotalCapacity - currentOccupants;
+            return totalRemaining;
+        }
+
+        static int OccupancyPercentage(Room room)
+        {
+            int capacity = room.Capacity;
+            int currentOccupants = room.CurrentOccupants;
+
+            int percentage = (currentOccupants / capacity) * 100;
+            return percentage;
+
+        }
+
+        static int AverageOccupancyPercentage()
+        {
+            List<int> percentages = new List<int>();
+            foreach (Room room in Rooms)
+            {
+                int roomOccupancyRate = OccupancyPercentage(room);
+                percentages.Add(roomOccupancyRate);
+            }
+            int averageOccupancyRate = percentages.Sum() / Rooms.Count;
+            return averageOccupancyRate;
+        }
+
+        static List<Reservation> FutureBookings()
+        {
+            List<Reservation> futureReservations = Reservations.Where(reservation => reservation.StartDate > DateTime.Today).ToList();
+            return futureReservations;
+        }
     }
 }
