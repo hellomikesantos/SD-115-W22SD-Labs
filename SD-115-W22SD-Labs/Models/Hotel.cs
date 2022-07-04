@@ -18,7 +18,7 @@ namespace SD_115_W22SD_Labs.Models
             Reservations = new HashSet<Reservation>();
             Clients = new HashSet<Client>();
 
-            Room room1 = new Room(101, 4, "Regular");
+            Room room1 = new Room(101, 2, "Regular");
             Room room2 = new Room(102, 4, "Regular");
             Room room3 = new Room(103, 2, "Premium");
 
@@ -35,6 +35,12 @@ namespace SD_115_W22SD_Labs.Models
             Clients.Add(client3);
 
         }
+
+        //internal static List<Room> GetVacantRooms(ICollection<Room> rooms)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
         static Client GetClient(int clientId)
         {
             Client client = Clients.First(client => client.IdCounter == clientId);
@@ -53,13 +59,13 @@ namespace SD_115_W22SD_Labs.Models
             return room;
         }
 
-        static List<Room> GetVacantRooms(List<Room> rooms)
+        public static List<Room> GetVacantRooms(List<Room> rooms)
         {
             List<Room> vacantRooms = rooms.Where(room => !room.Occupied).ToList();
             return vacantRooms;
         }
 
-        static List<Client> TopThreeClients()
+        public static List<Client> TopThreeClients()
         {
 
             List<Client> topClients = Clients.OrderByDescending(client => client.Reservations.Count).ToList();
@@ -67,7 +73,7 @@ namespace SD_115_W22SD_Labs.Models
             return topThreeClients;
         }
 
-        static bool WithDuplicate(DateTime date)
+        public static bool WithDuplicate(DateTime date)
         {
             bool withDuplicate = false; ;
             foreach(Reservation reservation in Reservations)
@@ -85,7 +91,7 @@ namespace SD_115_W22SD_Labs.Models
             return withDuplicate;
         }
 
-        static void ReserveRoom(Client client, int roomNumber, DateTime startDate, int occupants)
+        public static void ReserveRoom(Client client, int roomNumber, DateTime startDate, int occupants)
         {
             foreach (Room room in Rooms)
             {
@@ -107,7 +113,7 @@ namespace SD_115_W22SD_Labs.Models
             }
         }
 
-        static Reservation AutomaticReservation(int clientId, int occupants)
+        public static Reservation AutomaticReservation(int clientId, int occupants)
         {
             
             List<Room> occupiableRooms = Rooms.Where(room => room.Capacity >= occupants).ToList();
@@ -128,14 +134,14 @@ namespace SD_115_W22SD_Labs.Models
             return null;
         }
 
-        static void Checkin(string clientName)
+        public static void Checkin(string clientName)
         {
             Client client = Clients.First(client => client.Name == clientName);
             client.Reservation.Current = true;
             client.Reservation.Room.Occupied = true;
             client.Reservation.Room.CurrentOccupants = client.Reservation.Occupants;
         }
-        static void CheckoutRoom(int roomNumber)
+        public static void CheckoutRoom(int roomNumber)
         {
             Room room = GetRoom(roomNumber);
             // check-out reservation
@@ -143,7 +149,7 @@ namespace SD_115_W22SD_Labs.Models
             room.Occupied = false;
             room.CurrentOccupants = room.Reservation.Occupants;
         }
-        static void CheckOutRoom(string clientName)
+        public static void CheckOutRoom(string clientName)
         {
             Client client = Clients.First(client => client.Name == clientName);
             client.Reservation.Current = true;
@@ -151,7 +157,7 @@ namespace SD_115_W22SD_Labs.Models
             client.Reservation.Room.CurrentOccupants = client.Reservation.Occupants;
         }
 
-        static int TotalCapacityRemaining()
+        public static int TotalCapacityRemaining()
         {
             // get total capacity
             int TotalCapacity = 0;
@@ -166,7 +172,7 @@ namespace SD_115_W22SD_Labs.Models
             return totalRemaining;
         }
 
-        static int OccupancyPercentage(Room room)
+        public static int OccupancyPercentage(Room room)
         {
             int capacity = room.Capacity;
             int currentOccupants = room.CurrentOccupants;
@@ -176,7 +182,7 @@ namespace SD_115_W22SD_Labs.Models
 
         }
 
-        static int AverageOccupancyPercentage()
+        public static int AverageOccupancyPercentage()
         {
             List<int> percentages = new List<int>();
             foreach (Room room in Rooms)
@@ -188,7 +194,7 @@ namespace SD_115_W22SD_Labs.Models
             return averageOccupancyRate;
         }
 
-        static List<Reservation> FutureBookings()
+        public static List<Reservation> FutureBookings()
         {
             List<Reservation> futureReservations = Reservations.Where(reservation => reservation.StartDate > DateTime.Today).ToList();
             return futureReservations;

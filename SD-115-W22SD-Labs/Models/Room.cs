@@ -7,6 +7,7 @@
         public bool Occupied { get; set; } = false;
         public string Rating { get; set; }
         public int CurrentOccupants { get; set; } = 0;
+        public int RemainingCapacity { get; set; } = 0;
         public Reservation Reservation { get; set; }
         public Room(int number, int capacity, string rating)
         {
