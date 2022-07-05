@@ -40,25 +40,37 @@ namespace SD_115_W22SD_Labs.Controllers
 
         public IActionResult AvailableRoom(int occupants)
         {
-            List<Room> rooms = Hotel.Rooms.Where(room => room.Capacity >= occupants).ToList();
-            Room room = rooms[0];
-
-            for(int i = 0; i < rooms.Count - 1; i++)
+            try
             {
-                for(int j = 1; j < rooms.Count; j++)
+                List<Room> rooms = Hotel.Rooms.Where(room => room.Capacity >= occupants).ToList();
+                Room room = rooms[0];
+                if (rooms.Count < 1)
                 {
-                    if (rooms[i].Number < rooms[j].Number)
+                    return RedirectToAction("Error");
+                }
+
+                for (int i = 0; i < rooms.Count - 1; i++)
+                {
+                    for (int j = 1; j < rooms.Count; j++)
                     {
-                        room = rooms[i];
-                    }
-                    else if (rooms[j].Number < rooms[i].Number)
-                    {
-                        room = rooms[j];
-                        break;
+                        if (rooms[i].Number < rooms[j].Number)
+                        {
+                            room = rooms[i];
+                        }
+                        else if (rooms[j].Number < rooms[i].Number)
+                        {
+                            room = rooms[j];
+                            break;
+                        }
                     }
                 }
+                return View(room);
             }
-            return View(room);
+            catch
+            {
+                return View();
+            }
+            
         }
     }
 }
