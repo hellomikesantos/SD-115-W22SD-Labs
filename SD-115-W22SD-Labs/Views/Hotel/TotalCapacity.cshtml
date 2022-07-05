@@ -1,0 +1,22 @@
+﻿@model List<Room>;
+
+
+<h1>Rooms Remaining: @Hotel.GetVacantRooms(Model).Count</h1>
+<h2>All Rooms - Total Capacity</h2>
+
+<div>
+    @foreach(Room room in Model)
+    {
+        int capacity = room.Capacity - room.CurrentOccupants;
+        if(capacity == 0)
+        {
+            <h2 style="color:red;">@ViewBag.Message</h2>
+        }
+        <h4>Room @room.Number</h4>
+        <ul>
+            <li>Capacity: @room.Capacity</li>
+            <li>Occupants: @room.CurrentOccupants</li>
+            <li>Room Capacity Remaining: @room.RemainingCapacity</li>
+        </ul>
+    }
+</div>
